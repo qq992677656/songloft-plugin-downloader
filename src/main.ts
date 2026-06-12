@@ -2,7 +2,7 @@
 import { jsonResponse, createRouter, parseQuery } from '@songloft/plugin-sdk';
 
 const router = createRouter();
-const DEFAULT_TEMPLATE = '{artist}-{album}/{title}';
+const DEFAULT_TEMPLATE = 'downloads/{artist}-{album}/{title}';
 
 router.get('/api/settings', async () => {
     const template = (await songloft.storage.get('path_template') as string) || DEFAULT_TEMPLATE;
