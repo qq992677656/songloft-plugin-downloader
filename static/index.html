@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>歌曲下载</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0C0C1D;color:#E0E0EC;font-size:14px;line-height:1.6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:rgba(212,165,116,.2);border-radius:2px}
+.gold{color:#D4A574}
+
+.app{max-width:800px;margin:0 auto;padding:16px 20px}
+
+.hdr{display:flex;align-items:center;gap:10px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:16px}
+.hdr h1{font-size:16px;font-weight:600}
+.hdr .spacer{flex:1}
+
+.settings{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:6px;padding:14px;margin-bottom:16px}
+.settings h3{font-size:12px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+.s-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.s-row:last-child{margin-bottom:0}
+.s-row label{font-size:12px;color:rgba(255,255,255,.5);min-width:80px}
+.s-row input[type=text]{flex:1;padding:6px 10px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:#E0E0EC;border-radius:4px;font-size:12px;outline:none}
+.s-row input[type=text]:focus{border-color:rgba(212,165,116,.4)}
+.s-row .hint{font-size:10px;color:rgba(255,255,255,.25);margin-left:4px}
+.toggle{position:relative;width:36px;height:20px;cursor:pointer}
+.toggle input{display:none}
+.toggle .slider{position:absolute;inset:0;background:rgba(255,255,255,.1);border-radius:10px;transition:.2s}
+.toggle input:checked+.slider{background:rgba(212,165,116,.4)}
+.toggle .slider::before{content:'';position:absolute;width:16px;height:16px;left:2px;bottom:2px;background:#fff;border-radius:50%;transition:.2s}
+.toggle input:checked+.slider::before{transform:translateX(16px)}
+
+.toolbar{display:flex;gap:8px;margin-bottom:12px;align-items:center}
+.toolbar .info{font-size:11px;color:rgba(255,255,255,.3)}
+.toolbar .spacer{flex:1}
+.btn{padding:6px 14px;border:1px solid rgba(255,255,255,.1);background:transparent;color:rgba(255,255,255,.5);cursor:pointer;border-radius:4px;font-size:12px;transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.btn:hover{border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.8)}
+.btn.pri{background:rgba(212,165,116,.12);color:#D4A574;border-color:rgba(212,165,116,.3);font-weight:600}
+.btn.pri:hover{background:rgba(212,165,116,.2)}
+.btn:disabled{opacity:.3;cursor:not-allowed}
+
+.progress{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:6px;padding:12px;margin-bottom:12px;display:none}
+.progress.active{display:block}
+.progress .bar-wrap{height:4px;background:rgba(255,255,255,.06);border-radius:2px;margin:8px 0}
+.progress .bar{height:100%;background:#D4A574;border-radius:2px;transition:width .3s}
+.progress .stats{font-size:11px;color:rgba(255,255,255,.4);display:flex;gap:12px}
+
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:10px;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.5px;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.06);position:sticky;top:0;background:#0C0C1D}
+td{padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.03);font-size:12px}
+tr:hover td{background:rgba(255,255,255,.02)}
+.cb{width:16px;height:16px;accent-color:#D4A574}
+.song-title{color:#E0E0EC}.song-artist{color:rgba(255,255,255,.4)}
+.song-album{color:rgba(255,255,255,.3);font-size:11px}
+.song-source{font-size:10px;color:rgba(212,165,116,.6);background:rgba(212,165,116,.08);padding:1px 6px;border-radius:3px}
+.table-wrap{flex:1;overflow-y:auto}
+
+.empty{text-align:center;padding:40px;color:rgba(255,255,255,.2);font-size:13px}
+.status-ok{color:#7BC47F}.status-fail{color:#E07A5F}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="hdr">
+    <h1 class="gold">歌曲下载</h1>
+    <div class="spacer"></div>
+  </div>
+
+  <div class="settings" id="settings">
+    <h3>设置</h3>
+    <div class="s-row">
+      <label>路径模板</label>
+      <input type="text" id="tpl" placeholder="{artist}-{album}/{title}">
+      <span class="hint">支持: {title} {artist} {album} {year} {genre}</span>
+    </div>
+    <div class="s-row">
+      <label>嵌入元数据</label>
+      <label class="toggle"><input type="checkbox" id="embed" checked><span class="slider"></span></label>
+      <span class="hint">写入标题/艺术家/封面等到音频文件标签</span>
+    </div>
+  </div>
+
+  <div class="progress" id="progress">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:13px">批量下载中...</span>
+      <span id="prog-num" style="font-size:12px;color:#D4A574">0/0</span>
+    </div>
+    <div class="bar-wrap"><div class="bar" id="prog-bar" style="width:0"></div></div>
+    <div class="stats">
+      <span>成功: <span id="prog-ok" class="status-ok">0</span></span>
+      <span>失败: <span id="prog-fail" class="status-fail">0</span></span>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <button class="btn" id="btn-sel-all">全选</button>
+    <button class="btn" id="btn-refresh">刷新</button>
+    <div class="spacer"></div>
+    <span class="info" id="sel-info">已选 0 首</span>
+    <button class="btn pri" id="btn-dl" disabled>下载选中</button>
+  </div>
+
+  <div class="table-wrap" style="max-height:calc(100vh - 300px);overflow-y:auto">
+    <table>
+      <thead><tr><th style="width:30px"><input type="checkbox" class="cb" id="cb-all"></th><th>标题</th><th>艺术家</th><th>专辑</th><th>来源</th><th style="width:60px">状态</th></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div class="empty" id="empty" style="display:none">没有可下载的网络歌曲</div>
+  </div>
+</div>
+
+<script>
+(function(){
+const P = window.SongloftPlugin;
+const api = (method, path, body) => {
+  const opts = { method };
+  if (body) opts.body = JSON.stringify(body);
+  return method === 'GET' ? P.apiGet(path) : P.apiPost(path, body);
+};
+
+let songs = [], selected = new Set(), dlStatus = {};
+const $ = s => document.querySelector(s);
+
+async function loadSettings() {
+  const r = await P.apiGet('/api/settings');
+  if (r) {
+    $('#tpl').value = r.path_template || '';
+    $('#embed').checked = r.embed_metadata !== false;
+  }
+}
+
+async function saveSettings() {
+  await P.apiPost('/api/settings', {
+    path_template: $('#tpl').value,
+    embed_metadata: $('#embed').checked,
+  });
+}
+
+async function loadSongs() {
+  const r = await P.apiGet('/api/songs?limit=500&offset=0');
+  songs = r && r.songs ? r.songs : [];
+  selected.clear();
+  render();
+}
+
+function render() {
+  const tbody = $('#tbody');
+  if (songs.length === 0) {
+    tbody.innerHTML = '';
+    $('#empty').style.display = 'block';
+    updateSelInfo();
+    return;
+  }
+  $('#empty').style.display = 'none';
+  tbody.innerHTML = songs.map(s => {
+    const src = s.plugin_entry_path || 'URL';
+    const st = dlStatus[s.id];
+    const stHtml = st ? (st.status === 'ok'
+      ? '<span class="status-ok">已下载</span>'
+      : '<span class="status-fail">失败</span>') : '';
+    return `<tr data-id="${s.id}">
+      <td><input type="checkbox" class="cb row-cb" data-id="${s.id}" ${selected.has(s.id)?'checked':''}></td>
+      <td class="song-title">${esc(s.title)}</td>
+      <td class="song-artist">${esc(s.artist||'')}</td>
+      <td class="song-album">${esc(s.album||'')}</td>
+      <td><span class="song-source">${esc(src)}</span></td>
+      <td>${stHtml}</td>
+    </tr>`;
+  }).join('');
+  document.querySelectorAll('.row-cb').forEach(cb => {
+    cb.addEventListener('change', e => {
+      const id = parseInt(e.target.dataset.id);
+      e.target.checked ? selected.add(id) : selected.delete(id);
+      updateSelInfo();
+    });
+  });
+  updateSelInfo();
+}
+
+function updateSelInfo() {
+  $('#sel-info').textContent = `已选 ${selected.size} 首`;
+  $('#btn-dl').disabled = selected.size === 0;
+  $('#cb-all').checked = songs.length > 0 && selected.size === songs.length;
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+$('#cb-all').addEventListener('change', e => {
+  if (e.target.checked) songs.forEach(s => selected.add(s.id));
+  else selected.clear();
+  render();
+});
+
+$('#btn-sel-all').addEventListener('click', () => {
+  if (selected.size === songs.length) selected.clear();
+  else songs.forEach(s => selected.add(s.id));
+  render();
+});
+
+$('#btn-refresh').addEventListener('click', () => { dlStatus = {}; loadSongs(); });
+
+$('#tpl').addEventListener('change', saveSettings);
+$('#embed').addEventListener('change', saveSettings);
+
+$('#btn-dl').addEventListener('click', async () => {
+  if (selected.size === 0) return;
+  const ids = [...selected];
+  await saveSettings();
+
+  await P.apiPost('/api/download-batch/clear');
+  await P.apiPost('/api/download-batch', { song_ids: ids });
+
+  const prog = $('#progress');
+  prog.classList.add('active');
+
+  const poll = setInterval(async () => {
+    const r = await P.apiGet('/api/download-batch/progress');
+    if (!r || !r.active) { clearInterval(poll); return; }
+    const pct = r.total > 0 ? (r.current / r.total * 100) : 0;
+    $('#prog-bar').style.width = pct + '%';
+    $('#prog-num').textContent = r.current + '/' + r.total;
+    $('#prog-ok').textContent = r.success;
+    $('#prog-fail').textContent = r.failed;
+
+    if (r.results) r.results.forEach(res => { dlStatus[res.song_id] = res; });
+    render();
+
+    if (r.done) {
+      clearInterval(poll);
+      setTimeout(() => {
+        prog.classList.remove('active');
+        selected.clear();
+        loadSongs();
+      }, 2000);
+    }
+  }, 800);
+});
+
+loadSettings();
+loadSongs();
+})();
+</script>
+</body>
+</html>

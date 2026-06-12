@@ -1,0 +1,17 @@
+{
+  "name": "歌曲下载",
+  "version": "0.1.0",
+  "description": "将 WebDAV/Subsonic 等自有网络存储中的歌曲下载到服务端本地，支持自定义目录结构和元数据嵌入",
+  "author": "Songloft Team",
+  "homepage": "https://github.com/songloft-org/songloft-plugin-downloader",
+  "entryPath": "song-downloader",
+  "main": "main.js",
+  "minHostVersion": "2.6.0",
+  "permissions": [
+    "storage",
+    "songs.read",
+    "songs.write"
+  ],
+  "entryHash": "",
+  "zipHash": ""
+}

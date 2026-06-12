@@ -1,0 +1,14 @@
+{
+  "name": "songloft-plugin-downloader",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "songloft-plugin build",
+    "dev": "songloft-plugin dev"
+  },
+  "devDependencies": {
+    "@songloft/plugin-builder": "^2.4.3",
+    "@songloft/plugin-sdk": "^2.4.3",
+    "typescript": "^5.0.0"
+  }
+}
