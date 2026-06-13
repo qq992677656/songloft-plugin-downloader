@@ -36,8 +36,8 @@ router.post('/api/download', async (req) => {
     const embedMetadata = (await songloft.storage.get('embed_metadata')) ?? true;
 
     const result = await songloft.songs.download(song_id, {
-        pathTemplate: template,
-        embedMetadata: embedMetadata as boolean,
+        path_template: template,
+        embed_metadata: embedMetadata as boolean,
     });
     return jsonResponse(result);
 });
@@ -68,8 +68,8 @@ router.post('/api/download-batch', async (req) => {
             batchTask.current++;
             try {
                 const result = await songloft.songs.download(id, {
-                    pathTemplate: template,
-                    embedMetadata: embedMetadata as boolean,
+                    path_template: template,
+                    embed_metadata: embedMetadata as boolean,
                 });
                 batchTask.results.push({ song_id: id, ...result });
             } catch (e: any) {
