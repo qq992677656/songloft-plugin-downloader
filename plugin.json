@@ -15,6 +15,7 @@
     "songs.read",
     "songs.write"
   ],
+  "download_url": "https://github.com/songloft-org/songloft-plugin-downloader/releases/download/v2026.6.12/song-downloader.jsplugin.zip",
   "updateUrl": "https://raw.githubusercontent.com/songloft-org/songloft-plugin-downloader/main/plugin.json",
   "entryHash": "",
   "zipHash": ""
