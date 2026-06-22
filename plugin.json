@@ -7,7 +7,7 @@
   "homepage": "https://github.com/songloft-org/songloft-plugin-downloader",
   "license": "Apache-2.0",
   "icon": "icon.svg",
-  "entryPath": "song-downloader",
+  "entryPath": "downloader",
   "main": "main.js",
   "minHostVersion": "2.6.0",
   "permissions": [
@@ -15,7 +15,7 @@
     "songs.read",
     "songs.write"
   ],
-  "download_url": "https://github.com/songloft-org/songloft-plugin-downloader/releases/download/v2026.6.12/song-downloader.jsplugin.zip",
+  "download_url": "https://github.com/songloft-org/songloft-plugin-downloader/releases/download/v2026.6.12/downloader.jsplugin.zip",
   "updateUrl": "https://raw.githubusercontent.com/songloft-org/songloft-plugin-downloader/main/plugin.json",
   "entryHash": "",
   "zipHash": ""
