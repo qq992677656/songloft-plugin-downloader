@@ -19,8 +19,11 @@
                     <label class="form-label">路径模板</label>
                     <input type="text" class="text-field" id="tpl" placeholder="{artist}-{album}/{title}" aria-label="路径模板">
                     <div class="form-hint">支持: {title} {artist} {album} {year} {genre}</div>
-                </div>
-                <div class="switch-row">
+                </div>                <div class="form-group">
+                    <label class="form-label">批量下载间隔（秒）</label>
+                    <input type="number" class="text-field" id="interval" min="0" step="1" placeholder="0" aria-label="批量下载间隔">
+                    <div class="form-hint">0 表示无间隔（默认），建议 1-5 秒以减少服务器负载</div>
+                </div>                <div class="switch-row">
                     <div class="switch-row-label">
                         <span class="switch-row-title">嵌入元数据</span>
                         <span class="switch-row-subtitle">写入标题/艺术家/封面等到音频文件标签</span>

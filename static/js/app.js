@@ -23,6 +23,7 @@ async function loadSettings() {
     if (r) {
         $('#tpl').value = r.path_template || '';
         $('#embed').checked = r.embed_metadata !== false;
+        $('#interval').value = r.download_interval ?? 0;
     }
 }
 
@@ -30,6 +31,7 @@ async function saveSettings() {
     await P.apiPost('/api/settings', {
         path_template: $('#tpl').value,
         embed_metadata: $('#embed').checked,
+        download_interval: parseInt($('#interval').value) || 0,
     });
 }
 
@@ -105,6 +107,7 @@ $('#btn-refresh').addEventListener('click', () => {
 // Settings auto-save
 $('#tpl').addEventListener('change', saveSettings);
 $('#embed').addEventListener('change', saveSettings);
+$('#interval').addEventListener('change', saveSettings);
 
 // Download
 $('#btn-dl').addEventListener('click', async () => {

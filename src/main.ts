@@ -7,7 +7,8 @@ const DEFAULT_TEMPLATE = 'downloads/{artist}-{album}/{title}';
 router.get('/api/settings', async () => {
     const template = (await songloft.storage.get('path_template') as string) || DEFAULT_TEMPLATE;
     const embedMetadata = (await songloft.storage.get('embed_metadata')) ?? true;
-    return jsonResponse({ path_template: template, embed_metadata: embedMetadata });
+    const downloadInterval = (await songloft.storage.get('download_interval')) as number ?? 0;
+    return jsonResponse({ path_template: template, embed_metadata: embedMetadata, download_interval: downloadInterval });
 });
 
 router.post('/api/settings', async (req) => {
@@ -17,6 +18,9 @@ router.post('/api/settings', async (req) => {
     }
     if (body.embed_metadata !== undefined) {
         await songloft.storage.set('embed_metadata', body.embed_metadata);
+    }
+    if (body.download_interval !== undefined) {
+        await songloft.storage.set('download_interval', body.download_interval);
     }
     return jsonResponse({ ok: true });
 });
@@ -59,12 +63,14 @@ router.post('/api/download-batch', async (req) => {
 
     const template = (await songloft.storage.get('path_template') as string) || DEFAULT_TEMPLATE;
     const embedMetadata = (await songloft.storage.get('embed_metadata')) ?? true;
+    const downloadInterval = (await songloft.storage.get('download_interval')) as number ?? 0;
 
     batchTask = { results: [], current: 0, total: song_ids.length, done: false };
 
     (async () => {
-        for (const id of song_ids) {
+        for (let i = 0; i < song_ids.length; i++) {
             if (!batchTask) break;
+            const id = song_ids[i];
             batchTask.current++;
             try {
                 const result = await songloft.songs.download(id, {
@@ -74,6 +80,10 @@ router.post('/api/download-batch', async (req) => {
                 batchTask.results.push({ song_id: id, ...result });
             } catch (e: any) {
                 batchTask.results.push({ song_id: id, status: 'failed', error: e.message });
+            }
+            // 添加下载间隔（如果不是最后一首）
+            if (i < song_ids.length - 1 && downloadInterval > 0) {
+                await new Promise(resolve => setTimeout(resolve, downloadInterval * 1000));
             }
         }
         if (batchTask) batchTask.done = true;
