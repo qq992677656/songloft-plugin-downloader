@@ -8,7 +8,8 @@ router.get('/api/settings', async () => {
     const template = (await songloft.storage.get('path_template') as string) || DEFAULT_TEMPLATE;
     const embedMetadata = (await songloft.storage.get('embed_metadata')) ?? true;
     const downloadInterval = (await songloft.storage.get('download_interval')) as number ?? 0;
-    return jsonResponse({ path_template: template, embed_metadata: embedMetadata, download_interval: downloadInterval });
+    const autoDownload = (await songloft.storage.get('auto_download')) ?? false;
+    return jsonResponse({ path_template: template, embed_metadata: embedMetadata, download_interval: downloadInterval, auto_download: autoDownload });
 });
 
 router.post('/api/settings', async (req) => {
@@ -21,6 +22,10 @@ router.post('/api/settings', async (req) => {
     }
     if (body.download_interval !== undefined) {
         await songloft.storage.set('download_interval', body.download_interval);
+    }
+    if (body.auto_download !== undefined) {
+        await songloft.storage.set('auto_download', body.auto_download);
+        await syncAutoDownloadConfig();
     }
     return jsonResponse({ ok: true });
 });
@@ -113,5 +118,20 @@ router.post('/api/download-batch/clear', async () => {
     batchTask = null;
     return jsonResponse({ ok: true });
 });
+
+async function syncAutoDownloadConfig() {
+    const template = (await songloft.storage.get('path_template') as string) || DEFAULT_TEMPLATE;
+    const embedMetadata = (await songloft.storage.get('embed_metadata')) ?? true;
+    const autoDownload = (await songloft.storage.get('auto_download')) ?? false;
+    await (songloft.songs as any).setAutoDownload({
+        enabled: !!autoDownload,
+        path_template: template,
+        embed_metadata: !!embedMetadata,
+    });
+}
+
+globalThis.onInit = async () => {
+    await syncAutoDownloadConfig();
+};
 
 globalThis.onHTTPRequest = async (req: HTTPRequest) => router.handle(req);

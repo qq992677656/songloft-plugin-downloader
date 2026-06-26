@@ -24,6 +24,7 @@ async function loadSettings() {
         $('#tpl').value = r.path_template || '';
         $('#embed').checked = r.embed_metadata !== false;
         $('#interval').value = r.download_interval ?? 0;
+        $('#auto-dl').checked = !!r.auto_download;
     }
 }
 
@@ -32,6 +33,7 @@ async function saveSettings() {
         path_template: $('#tpl').value,
         embed_metadata: $('#embed').checked,
         download_interval: parseInt($('#interval').value) || 0,
+        auto_download: $('#auto-dl').checked,
     });
 }
 
@@ -108,6 +110,7 @@ $('#btn-refresh').addEventListener('click', () => {
 $('#tpl').addEventListener('change', saveSettings);
 $('#embed').addEventListener('change', saveSettings);
 $('#interval').addEventListener('change', saveSettings);
+$('#auto-dl').addEventListener('change', saveSettings);
 
 // 开始下载轮询
 function startPolling(autoClose = true) {
